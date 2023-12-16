@@ -2,27 +2,36 @@ import fastify from "fastify";
 import "dotenv/config";
 import { PostgresGetUsersRepository } from "./repositories/get-users/postgres-get-users";
 import { GetUsersController } from "./controllers/get-users/get-users";
+import { MongoClient } from "./database/mongo";
 
-const server = fastify();
+const main = async () => {
+  const server = fastify();
 
-const portDotEnv = process.env.PORT;
+  await MongoClient.connect();
 
-const port = portDotEnv as number | undefined;
+  server.get("/users", async (req, res) => {
+    const postgresGetUsersRepository = new PostgresGetUsersRepository();
 
-server.listen({ port: port }, (err, address) => {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
-  console.log(`Server listening at ${address}`);
-});
+    const getUsersController = new GetUsersController(
+      postgresGetUsersRepository
+    );
 
-server.get("/users", async (req, res) => {
-  const postgresGetUsersRepository = new PostgresGetUsersRepository();
+    const { body, statusCode } = await getUsersController.handle();
 
-  const getUsersController = new GetUsersController(postgresGetUsersRepository);
+    res.send(body).code(statusCode);
+  });
 
-  const { body, statusCode } = await getUsersController.handle();
+  const portDotEnv = process.env.PORT;
 
-  res.send(body).code(statusCode);
-});
+  const port = portDotEnv as number | undefined;
+
+  server.listen({ port: port }, (err, address) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    console.log(`Server listening at ${address}`);
+  });
+};
+
+main();
