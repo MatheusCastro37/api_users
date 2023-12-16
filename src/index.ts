@@ -1,5 +1,7 @@
 import fastify from "fastify";
 import "dotenv/config";
+import { PostgresGetUsersRepository } from "./repositories/get-users/postgres-get-users";
+import { GetUsersController } from "./controllers/get-users/get-users";
 
 const server = fastify();
 
@@ -15,4 +17,12 @@ server.listen({ port: port }, (err, address) => {
   console.log(`Server listening at ${address}`);
 });
 
-server.get("/", async (req, res) => console.log("hello world"));
+server.get("/users", async (req, res) => {
+  const postgresGetUsersRepository = new PostgresGetUsersRepository();
+
+  const getUsersController = new GetUsersController(postgresGetUsersRepository);
+
+  const { body, statusCode } = await getUsersController.handle();
+
+  res.send(body).code(statusCode);
+});
