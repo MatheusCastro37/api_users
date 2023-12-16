@@ -1,6 +1,6 @@
 import fastify from "fastify";
 import "dotenv/config";
-import { PostgresGetUsersRepository } from "./repositories/get-users/postgres-get-users";
+import { MongoGetUsersRepository } from "./repositories/get-users/mongo-get-users";
 import { GetUsersController } from "./controllers/get-users/get-users";
 import { MongoClient } from "./database/mongo";
 
@@ -10,11 +10,9 @@ const main = async () => {
   await MongoClient.connect();
 
   server.get("/users", async (req, res) => {
-    const postgresGetUsersRepository = new PostgresGetUsersRepository();
+    const mongoGetUsersRepository = new MongoGetUsersRepository();
 
-    const getUsersController = new GetUsersController(
-      postgresGetUsersRepository
-    );
+    const getUsersController = new GetUsersController(mongoGetUsersRepository);
 
     const { body, statusCode } = await getUsersController.handle();
 
