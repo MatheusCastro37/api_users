@@ -1,8 +1,18 @@
 import fastify from "fastify";
+import type { FastifyRequest } from "fastify";
 import "dotenv/config";
 import { MongoGetUsersRepository } from "./repositories/get-users/mongo-get-users";
 import { GetUsersController } from "./controllers/get-users/get-users";
 import { MongoClient } from "./database/mongo";
+import { MongoCreateUserRepository } from "./repositories/create-user/mongo-create-user";
+import { CreateUserController } from "./controllers/create-user/create-user";
+
+interface BodyType {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
 
 const main = async () => {
   const server = fastify();
@@ -16,8 +26,25 @@ const main = async () => {
 
     const { body, statusCode } = await getUsersController.handle();
 
-    res.send(body).code(statusCode);
+    res.code(statusCode).send(body);
   });
+
+  server.post(
+    "/users",
+    async (req: FastifyRequest<{ Body: BodyType }>, res) => {
+      const mongoCreateUserRepository = new MongoCreateUserRepository();
+
+      const createUserController = new CreateUserController(
+        mongoCreateUserRepository
+      );
+
+      const { body, statusCode } = await createUserController.handle({
+        body: req.body,
+      });
+
+      res.code(statusCode).send(body);
+    }
+  );
 
   const portDotEnv = process.env.PORT;
 
