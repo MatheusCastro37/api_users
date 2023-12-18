@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { User } from "../../models/user";
-import { HttpRequest, HttpResponse } from "../protocols";
-import {
-  IUpdateUserController,
-  IUpdateUserRepository,
-  UpdateUserParams,
-} from "./protocols";
+import { HttpRequest, HttpResponse, IController } from "../protocols";
+import { IUpdateUserRepository, UpdateUserParams } from "./protocols";
 
-export class UpdateUserController implements IUpdateUserController {
-  constructor(private readonly updateUserReposiroty: IUpdateUserRepository) {}
-  async handle(httpRequest: HttpRequest<any>): Promise<HttpResponse<User>> {
+export class UpdateUserController implements IController {
+  constructor(private readonly updateUserRepository: IUpdateUserRepository) {}
+  async handle(
+    httpRequest: HttpRequest<UpdateUserParams>
+  ): Promise<HttpResponse<User>> {
     try {
       const id = httpRequest?.params?.id;
       const body = httpRequest?.body;
@@ -18,6 +16,13 @@ export class UpdateUserController implements IUpdateUserController {
         return {
           statusCode: 400,
           body: "Um id precisa ser especificado.",
+        };
+      }
+
+      if (!body) {
+        return {
+          statusCode: 400,
+          body: "Esta faltando algum campo",
         };
       }
 
@@ -38,7 +43,7 @@ export class UpdateUserController implements IUpdateUserController {
         };
       }
 
-      const user = await this.updateUserReposiroty.updateUser(id, body);
+      const user = await this.updateUserRepository.updateUser(id, body);
 
       return {
         statusCode: 200,

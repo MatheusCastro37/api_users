@@ -52,7 +52,7 @@ const main = async () => {
 
   server.patch(
     "/users/:id",
-    async (req: FastifyRequest<{ Params: string }>, res) => {
+    async (req: FastifyRequest<{ Body: BodyType; Params: string }>, res) => {
       const mongoUpdateUserRepository = new MongoUpdateUserRepository();
 
       const updateUserController = new UpdateUserController(
