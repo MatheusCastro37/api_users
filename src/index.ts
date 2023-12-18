@@ -8,6 +8,8 @@ import { MongoCreateUserRepository } from "./repositories/create-user/mongo-crea
 import { CreateUserController } from "./controllers/create-user/create-user";
 import { MongoUpdateUserRepository } from "./repositories/update-user/mongo-update-user";
 import { UpdateUserController } from "./controllers/update-user/update-users";
+import { MongoDeleteUserRepository } from "./repositories/delete-user/mongo-delete-user";
+import { DeleteUserController } from "./controllers/delete-user/delete-user";
 
 interface BodyType {
   firstName: string;
@@ -59,6 +61,23 @@ const main = async () => {
 
       const { body, statusCode } = await updateUserController.handle({
         body: req.body,
+        params: req.params,
+      });
+
+      res.code(statusCode).send(body);
+    }
+  );
+
+  server.delete(
+    "/users/:id",
+    async (req: FastifyRequest<{ Params: string }>, res) => {
+      const mongoDeleteUserRepository = new MongoDeleteUserRepository();
+
+      const deleteUserController = new DeleteUserController(
+        mongoDeleteUserRepository
+      );
+
+      const { body, statusCode } = await deleteUserController.handle({
         params: req.params,
       });
 
