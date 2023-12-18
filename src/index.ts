@@ -1,89 +1,22 @@
 import fastify from "fastify";
-import type { FastifyRequest } from "fastify";
 import "dotenv/config";
-import { MongoGetUsersRepository } from "./repositories/get-users/mongo-get-users";
-import { GetUsersController } from "./controllers/get-users/get-users";
 import { MongoClient } from "./database/mongo";
-import { MongoCreateUserRepository } from "./repositories/create-user/mongo-create-user";
-import { CreateUserController } from "./controllers/create-user/create-user";
-import { MongoUpdateUserRepository } from "./repositories/update-user/mongo-update-user";
-import { UpdateUserController } from "./controllers/update-user/update-users";
-import { MongoDeleteUserRepository } from "./repositories/delete-user/mongo-delete-user";
-import { DeleteUserController } from "./controllers/delete-user/delete-user";
-
-interface BodyType {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
+import getRoute from "./routes/get-users";
+import deleteRoute from "./routes/delete-user";
+import createRoute from "./routes/create-user";
+import updateRoute from "./routes/update-user";
 
 const main = async () => {
   const server = fastify();
-
   await MongoClient.connect();
 
-  server.get("/users", async (req, res) => {
-    const mongoGetUsersRepository = new MongoGetUsersRepository();
+  server.register(getRoute);
 
-    const getUsersController = new GetUsersController(mongoGetUsersRepository);
+  server.register(createRoute);
 
-    const { body, statusCode } = await getUsersController.handle();
+  server.register(updateRoute);
 
-    res.code(statusCode).send(body);
-  });
-
-  server.post(
-    "/users",
-    async (req: FastifyRequest<{ Body: BodyType }>, res) => {
-      const mongoCreateUserRepository = new MongoCreateUserRepository();
-
-      const createUserController = new CreateUserController(
-        mongoCreateUserRepository
-      );
-
-      const { body, statusCode } = await createUserController.handle({
-        body: req.body,
-      });
-
-      res.code(statusCode).send(body);
-    }
-  );
-
-  server.patch(
-    "/users/:id",
-    async (req: FastifyRequest<{ Body: BodyType; Params: string }>, res) => {
-      const mongoUpdateUserRepository = new MongoUpdateUserRepository();
-
-      const updateUserController = new UpdateUserController(
-        mongoUpdateUserRepository
-      );
-
-      const { body, statusCode } = await updateUserController.handle({
-        body: req.body,
-        params: req.params,
-      });
-
-      res.code(statusCode).send(body);
-    }
-  );
-
-  server.delete(
-    "/users/:id",
-    async (req: FastifyRequest<{ Params: string }>, res) => {
-      const mongoDeleteUserRepository = new MongoDeleteUserRepository();
-
-      const deleteUserController = new DeleteUserController(
-        mongoDeleteUserRepository
-      );
-
-      const { body, statusCode } = await deleteUserController.handle({
-        params: req.params,
-      });
-
-      res.code(statusCode).send(body);
-    }
-  );
+  server.register(deleteRoute);
 
   const portDotEnv = process.env.PORT;
 
