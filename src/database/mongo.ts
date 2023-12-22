@@ -15,6 +15,6 @@ export const MongoClient = {
     this.client = client;
     this.db = db;
 
-    console.log("conectado no mongoDB, se nao deu ruim");
+    console.log("conectado no mongoDB");
   },
 };
