@@ -17,7 +17,7 @@ export class UpdateUserController implements IController {
         return badRequest("Um id precisa ser especificado.");
       }
 
-      if (!body) {
+      if (!body || {}) {
         return badRequest("Esta faltando algum campo");
       }
 
